@@ -1,6 +1,7 @@
 import os
-from sqlalchemy import Column, String, Integer, create_engine
+from sqlalchemy import Column, String, Integer, create_engine, ForeignKey
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import relationship
 import json
 
 database_name = 'trivia'
@@ -20,6 +21,25 @@ def setup_db(app, database_path=database_path):
     db.create_all()
 
 """
+Category
+
+"""
+class Category(db.Model):
+    __tablename__ = 'categories'
+
+    id = Column(Integer, primary_key=True)
+    type = Column(String)
+
+    def __init__(self, type):
+        self.type = type
+
+    def format(self):
+        return {
+            'id': self.id,
+            'type': self.type
+            }
+
+"""
 Question
 
 """
@@ -29,8 +49,10 @@ class Question(db.Model):
     id = Column(Integer, primary_key=True)
     question = Column(String)
     answer = Column(String)
-    category = Column(String)
+    category = Column(Integer, ForeignKey(Category.id))
     difficulty = Column(Integer)
+
+    categoryFK = relationship('Category', back_populates = 'questions')
 
     def __init__(self, question, answer, category, difficulty):
         self.question = question
@@ -55,24 +77,8 @@ class Question(db.Model):
             'question': self.question,
             'answer': self.answer,
             'category': self.category,
-            'difficulty': self.difficulty
+            'difficulty': self.difficulty,
+            'categoryType': self.categoryFK.type
             }
 
-"""
-Category
-
-"""
-class Category(db.Model):
-    __tablename__ = 'categories'
-
-    id = Column(Integer, primary_key=True)
-    type = Column(String)
-
-    def __init__(self, type):
-        self.type = type
-
-    def format(self):
-        return {
-            'id': self.id,
-            'type': self.type
-            }
+Category.questions = relationship("Question", back_populates = "categoryFK")
