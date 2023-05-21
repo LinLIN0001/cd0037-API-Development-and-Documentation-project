@@ -8,6 +8,16 @@
 
 2. **Virtual Environment** - We recommend working within a virtual environment whenever using Python for projects. This keeps your dependencies for each project separate and organized. Instructions for setting up a virual environment for your platform can be found in the [python docs](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/)
 
+From the backend folder run
+```bash
+# Mac users
+python3 -m venv venv
+source venv/bin/activate
+# Windows users
+> py -3 -m venv venv
+> venv\Scripts\activate
+```
+
 3. **PIP Dependencies** - Once your virtual environment is setup and running, install the required dependencies by navigating to the `/backend` directory and running:
 
 ```bash
@@ -24,13 +34,38 @@ pip install -r requirements.txt
 
 ### Set up the Database
 
-With Postgres running, create a `trivia` database:
+#### Step 0: Start/Stop the PostgreSQL server
+Mac users can follow the commands below:
+```bash
+which postgres
+postgres --version
+# Start/stop
+pg_ctl -D /usr/local/var/postgres start
+pg_ctl -D /usr/local/var/postgres stop 
+```
+Windows users can follow the commands below:
+- Find the database directory, it should be something like that: *C:\Program Files\PostgreSQL\13.2\data*
+- Then, in the command line, execute the folllowing command: 
+```bash
+# Start the server
+pg_ctl -D "C:\Program Files\PostgreSQL\13.2\data" start
+# Stop the server
+pg_ctl -D "C:\Program Files\PostgreSQL\13.2\data" stop
+```
+If it shows that the *port already occupied* error, run:
+```bash
+sudo su - 
+ps -ef | grep postmaster | awk '{print $2}'
+kill <PID> 
+```
+
+#### Step 1: With Postgres running, create a `trivia` database:
 
 ```bash
 createdb trivia
 ```
 
-Populate the database using the `trivia.psql` file provided. From the `backend` folder in terminal run:
+#### Step 2: Populate the database using the `trivia.psql` file provided. From the `backend` folder in terminal run:
 
 ```bash
 psql trivia < trivia.psql
@@ -48,30 +83,7 @@ flask run --reload
 
 The `--reload` flag will detect file changes and restart the server automatically.
 
-## To Do Tasks
-
-These are the files you'd want to edit in the backend:
-
-1. `backend/flaskr/__init__.py`
-2. `backend/test_flaskr.py`
-
-One note before you delve into your tasks: for each endpoint, you are expected to define the endpoint and response data. The frontend will be a plentiful resource because it is set up to expect certain endpoints and response data formats already. You should feel free to specify endpoints in your own way; if you do so, make sure to update the frontend or you will get some unexpected behavior.
-
-1. Use Flask-CORS to enable cross-domain requests and set response headers.
-2. Create an endpoint to handle `GET` requests for questions, including pagination (every 10 questions). This endpoint should return a list of questions, number of total questions, current category, categories.
-3. Create an endpoint to handle `GET` requests for all available categories.
-4. Create an endpoint to `DELETE` a question using a question `ID`.
-5. Create an endpoint to `POST` a new question, which will require the question and answer text, category, and difficulty score.
-6. Create a `POST` endpoint to get questions based on category.
-7. Create a `POST` endpoint to get questions based on a search term. It should return any questions for whom the search term is a substring of the question.
-8. Create a `POST` endpoint to get questions to play the quiz. This endpoint should take a category and previous question parameters and return a random questions within the given category, if provided, and that is not one of the previous questions.
-9. Create error handlers for all expected errors including 400, 404, 422, and 500.
-
-## Documenting your Endpoints
-
-You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
-
-### Documentation Example
+### Documentation
 
 `GET '/api/v1.0/categories'`
 
@@ -124,12 +136,90 @@ You will need to provide detailed documentation of your API endpoints including 
 
 ---
 
-Other endpoints with details can be found in ### Expected endpoints and behaviors at README.md of front end. 
+`DELETE '/questions/${id}'`
 
+- Deletes a specified question using the id of the question
+- Request Arguments: `id` - integer
+- Returns: Does not need to return anything besides the appropriate HTTP status code. Optionally can return the id of the question. If you are able to modify the frontend, you can have it remove the question using the id instead of refetching the questions.
+
+---
+
+`POST '/quizzes'`
+
+- Sends a post request in order to get the next question
+- Request Body:
+
+```json
+{
+    'previous_questions': [1, 4, 20, 15]
+    quiz_category': 'current category'
+ }
+```
+
+- Returns: a single new question object
+
+```json
+{
+  "question": {
+    "id": 1,
+    "question": "This is a question",
+    "answer": "This is an answer",
+    "difficulty": 5,
+    "category": 4
+  }
+}
+```
+
+---
+
+`POST '/questions'`
+
+- Sends a post request in order to add a new question
+- Request Body:
+
+```json
+{
+  "question": "Heres a new question string",
+  "answer": "Heres a new answer string",
+  "difficulty": 1,
+  "category": 3
+}
+```
+
+- Returns: Does not return any new data
+
+---
+
+`POST '/questions'`
+
+- Sends a post request in order to search for a specific question by search term
+- Request Body:
+
+```json
+{
+  "searchTerm": "this is the term the user is looking for"
+}
+```
+
+- Returns: any array of questions, a number of totalQuestions that met the search term and the current category string
+
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "This is a question",
+      "answer": "This is an answer",
+      "difficulty": 5,
+      "category": 5
+    }
+  ],
+  "totalQuestions": 100,
+  "currentCategory": "Entertainment"
+}
+```
 
 ## Testing
-
-Write at least one test for the success and at least one error behavior of each endpoint using the unittest library.
 
 To deploy the tests, run
 
