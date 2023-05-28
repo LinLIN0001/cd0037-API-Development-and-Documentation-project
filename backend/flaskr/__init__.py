@@ -39,10 +39,11 @@ def create_app(test_config=None):
     def retrieve_categories():
         categories = Category.query.order_by(Category.id).all()
         current_categories = [category.format() for category in categories]
+        current_categories_dic = {sub['id']: sub['type'] for sub in current_categories}
         return jsonify(
             {
                 "success": True,
-                "categories": current_categories,
+                "categories": current_categories_dic,
                 "total_categories": len(Category.query.all()),
             }
         )
@@ -54,6 +55,8 @@ def create_app(test_config=None):
         current_questions = paginate_questions(request, selection)
         categories = Category.query.order_by(Category.id).all()
         current_categories = [category.format() for category in categories]
+        current_categories_dic = {sub['id']: sub['type'] for sub in current_categories}
+ 
         if len(current_questions) == 0:
             abort(404)
 
@@ -62,8 +65,8 @@ def create_app(test_config=None):
                 "success": True,
                 "questions": current_questions,
                 "total_questions": len(selection),
-                "categories":  current_categories,
-                "current_category": categories[0].type
+                "categories":  current_categories_dic,
+                "current_category": current_categories_dic[1]
             }
         )
 
